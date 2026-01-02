@@ -9,7 +9,7 @@
     "start": "NODE_ENV=production node dist/backend/server.js",
     "preview": "vite preview",
     "test": "vitest --watch=false && npx playwright test",
-    "test:unit": "vitest",
+    "test:unit": "NODE_ENV=test vitest",
     "playwrightServer": "NODE_ENV=test tsx server.ts"
   },
   "devDependencies": {

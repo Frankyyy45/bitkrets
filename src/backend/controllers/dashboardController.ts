@@ -13,7 +13,7 @@ export async function getBlogPost({
   res: Response;
 }) {
   try {
-    const blogId = req.params.blogId;
+    const blogId = req.params.id;
     return res.send(
       await collections.blogPosts?.findOne({ _id: new ObjectId(blogId) })
     );

@@ -12,7 +12,7 @@ test("test create blog post", async () => {
 
 
     // test validCreateBlogPostFormData
-    expect(await createBlogPost(validCreateBlogPostFormData)).toContain(
+    expect(await createBlogPost(validCreateBlogPostFormData)).toContainEqual(
         {
             "blogTitle": validCreateBlogPostFormData.blogTitle,
             "blogText": validCreateBlogPostFormData.blogText

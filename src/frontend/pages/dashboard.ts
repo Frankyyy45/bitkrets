@@ -1,5 +1,6 @@
 import { blogPostFormSubmitType } from "../../constants";
 import type { BlogPost, BlogPostFormData } from "../../types/bitkrets";
+import { validateFrontendForm } from "../validateFrontendForm";
 
 function html() {
   return `
@@ -118,6 +119,12 @@ async function logic() {
   // save blog post
   blogForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    if (!validateFrontendForm(blogTitle.value, blogText.value)) {
+      console.log("Invalid form data (frontend)");
+      return;
+    }
+
     const submitType = submitBtn.getAttribute("data-submit-type");
     if (
       submitType === blogPostFormSubmitType.create ||

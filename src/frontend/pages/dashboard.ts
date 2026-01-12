@@ -3,7 +3,7 @@ import type { BlogPost, BlogPostFormData } from "../../types/bitkrets";
 import { validateFrontendForm } from "../validateFrontendForm";
 import { createBlogPostList } from "../createBlogPostList";
 import { handleDelete } from "../handleDelete";
-
+import { buildSubmitFormData } from "../buildSubmitFormData";
 
 function html() {
   return `
@@ -29,6 +29,7 @@ async function logic() {
   const response = await fetch("http://localhost:3000/posts");
   const blogPosts: BlogPost[] = await response.json();
   console.log(blogPosts);
+
   const blogPostsDiv = document.getElementById("blog-posts");
   if (blogPostsDiv) {
     blogPostsDiv.innerHTML = createBlogPostList(blogPosts);
@@ -46,57 +47,58 @@ async function logic() {
   ) as HTMLButtonElement;
 
   // delete post
-const deleteBtnList = document.querySelectorAll(
-  "[data-delete]"
-) as NodeListOf<HTMLButtonElement>;
+  const deleteBtnList = document.querySelectorAll(
+    "[data-delete]"
+  ) as NodeListOf<HTMLButtonElement>;
 
-if (deleteBtnList) {
-  deleteBtnList.forEach((deleteBtn) => {
-    deleteBtn.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const postId = deleteBtn.dataset["delete"];
+  if (deleteBtnList) {
+    deleteBtnList.forEach((deleteBtn) => {
+      deleteBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const postId = deleteBtn.dataset["delete"];
 
-      if (postId) {
-        try {
-          const fd = handleDelete(postId);
+        if (postId) {
+          try {
+            const fd = handleDelete(postId);
 
-          console.log(fd);
-          const res = await fetch("http://localhost:3000/dashboard", {
-            method: "post",
-            headers: {
-              "content-type": "application/json",
-            },
-            body: JSON.stringify(fd),
-          });
+            console.log(fd);
+            const res = await fetch("http://localhost:3000/dashboard", {
+              method: "post",
+              headers: {
+                "content-type": "application/json",
+              },
+              body: JSON.stringify(fd),
+            });
 
-          console.log(await res.text());
-          window.location.reload();
-        } catch (error) {
-          console.log(error);
+            console.log(await res.text());
+            window.location.reload();
+          } catch (error) {
+            console.log(error);
+          }
         }
-      }
+      });
     });
-  });
-}
-
+  }
 
   // edit post
-  // add eventListener to posts edit/delete
   if (blogForm && blogId && blogTitle && blogText && submitBtn) {
     const editBtnList = document.querySelectorAll(
       "[data-edit]"
     ) as NodeListOf<HTMLButtonElement>;
+
     if (editBtnList) {
       editBtnList.forEach((editBtn) => {
         editBtn.addEventListener("click", (event) => {
           event.preventDefault();
-          let postId = editBtn.dataset["edit"];
+          const postId = editBtn.dataset["edit"];
+
           blogTitle.value =
             document.querySelector(`[data-title="${postId}"]`)?.innerHTML ||
             "Could not load the post";
           blogText.value =
             document.querySelector(`[data-text="${postId}"]`)?.innerHTML ||
             "Could't load the post";
+
           submitBtn.setAttribute("data-submit-type", "edit");
           submitBtn.innerText = "Save Post";
           blogId.value = postId || "Could not load the post";
@@ -107,7 +109,7 @@ if (deleteBtnList) {
     }
   }
 
-  // save blog post
+  // save blog post (create/edit)
   blogForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -117,37 +119,40 @@ if (deleteBtnList) {
     }
 
     const submitType = submitBtn.getAttribute("data-submit-type");
-    if (
-      submitType === blogPostFormSubmitType.create ||
-      submitType === blogPostFormSubmitType.edit ||
-      submitType === blogPostFormSubmitType.delete
-    ) {
-      const formData: BlogPostFormData = {
-        blogId: blogId.value,
-        blogTitle: blogTitle.value,
-        blogText: blogText.value,
-        submitType: submitType,
-      };
-      console.log(formData);
-      try {
-        const response = await fetch("http://localhost:3000/dashboard", {
-          method: "post",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-        console.log(await response.text());
-        // remove value from form
-        blogTitle.value = "";
-        blogText.value = "";
-        // refresh page
-        window.location.reload();
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
+
+    const formData = buildSubmitFormData(
+      submitType,
+      blogId.value,
+      blogTitle.value,
+      blogText.value
+    );
+
+    if (!formData) {
       console.log("Invalid submit type.");
+      return;
+    }
+
+    console.log(formData);
+
+    try {
+      const response = await fetch("http://localhost:3000/dashboard", {
+        method: "post",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log(await response.text());
+
+      // remove value from form
+      blogTitle.value = "";
+      blogText.value = "";
+
+      // refresh page
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
     }
   });
 }

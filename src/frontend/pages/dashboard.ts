@@ -1,6 +1,7 @@
 import { blogPostFormSubmitType } from "../../constants";
 import type { BlogPost, BlogPostFormData } from "../../types/bitkrets";
 import { validateFrontendForm } from "../validateFrontendForm";
+import { createBlogPostList } from "../createBlogPostList";
 
 function html() {
   return `
@@ -28,19 +29,7 @@ async function logic() {
   console.log(blogPosts);
   const blogPostsDiv = document.getElementById("blog-posts");
   if (blogPostsDiv) {
-    blogPostsDiv.innerHTML = blogPosts
-      .map(
-        (post) =>
-          `
-                <div class="post" style="border:1px dotted">
-                    <h5 data-title=${post._id}>${post.blogTitle}</h5>
-                    <p data-text=${post._id}>${post.blogText}</p>
-                    <button data-edit=${post._id}>Edit</button>
-                    <button data-delete=${post._id}>Delete</button>
-                </div>
-            `
-      )
-      .join("");
+    blogPostsDiv.innerHTML = createBlogPostList(blogPosts);
   } else {
     console.log("Could not find blogPostDiv");
   }

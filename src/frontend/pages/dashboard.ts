@@ -2,6 +2,8 @@ import { blogPostFormSubmitType } from "../../constants";
 import type { BlogPost, BlogPostFormData } from "../../types/bitkrets";
 import { validateFrontendForm } from "../validateFrontendForm";
 import { createBlogPostList } from "../createBlogPostList";
+import { handleDelete } from "../handleDelete";
+
 
 function html() {
   return `
@@ -44,39 +46,39 @@ async function logic() {
   ) as HTMLButtonElement;
 
   // delete post
-  const deleteBtnList = document.querySelectorAll(
-    "[data-delete]"
-  ) as NodeListOf<HTMLButtonElement>;
-  if (deleteBtnList) {
-    deleteBtnList.forEach((deleteBtn) => {
-      deleteBtn.addEventListener("click", async (event) => {
-        event.preventDefault();
-        let postId = deleteBtn.dataset["delete"];
-        if (postId) {
-          try {
-            const fd: BlogPostFormData = {
-              blogId: postId,
-              blogTitle: "delete",
-              blogText: "delete",
-              submitType: blogPostFormSubmitType.delete,
-            };
-            console.log(fd);
-            const res = await fetch("http://localhost:3000/dashboard", {
-              method: "post",
-              headers: {
-                "content-type": "application/json",
-              },
-              body: JSON.stringify(fd),
-            });
-            console.log(await res.text());
-            window.location.reload();
-          } catch (error) {
-            console.log(error);
-          }
+const deleteBtnList = document.querySelectorAll(
+  "[data-delete]"
+) as NodeListOf<HTMLButtonElement>;
+
+if (deleteBtnList) {
+  deleteBtnList.forEach((deleteBtn) => {
+    deleteBtn.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const postId = deleteBtn.dataset["delete"];
+
+      if (postId) {
+        try {
+          const fd = handleDelete(postId);
+
+          console.log(fd);
+          const res = await fetch("http://localhost:3000/dashboard", {
+            method: "post",
+            headers: {
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(fd),
+          });
+
+          console.log(await res.text());
+          window.location.reload();
+        } catch (error) {
+          console.log(error);
         }
-      });
+      }
     });
-  }
+  });
+}
+
 
   // edit post
   // add eventListener to posts edit/delete
